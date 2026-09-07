@@ -1,14 +1,59 @@
 import type { ReactNode } from "react";
-import { AlertCircle, Inbox } from "lucide-react";
+import { AlertCircle, LoaderCircle, FolderOpen, RotateCw } from "lucide-react";
+import { Button } from "./ui/button";
 
 export function LoadingState() {
-  return <div className="grid min-h-64 place-items-center" role="status" aria-label="Yükleniyor"><div className="size-7 animate-spin rounded-full border-2 border-slate-200 border-t-blue-700" /></div>;
+  return (
+    <div
+      className="flex min-h-64 flex-col items-center justify-center gap-4"
+      role="status"
+    >
+      <LoaderCircle className="size-5 animate-spin text-muted-foreground" />
+      <p className="text-xs text-muted-foreground">Kayıtlar hazırlanıyor…</p>
+    </div>
+  );
 }
-
-export function ErrorState({ message, retry }: { message: string; retry?: () => void }) {
-  return <div className="flex min-h-52 flex-col items-center justify-center gap-3 rounded-lg border border-red-200 bg-white p-8 text-center"><div className="grid size-11 place-items-center rounded-full bg-red-50"><AlertCircle className="size-5 text-red-600" /></div><p className="text-sm font-medium text-red-700">{message}</p>{retry && <button onClick={retry} className="text-sm font-semibold text-red-700 underline underline-offset-4">Tekrar dene</button>}</div>;
+export function ErrorState({
+  message,
+  retry,
+}: {
+  message: string;
+  retry?: () => void;
+}) {
+  return (
+    <div
+      role="alert"
+      className="panel flex min-h-64 flex-col items-center justify-center gap-4 p-7 text-center"
+    >
+      <AlertCircle className="size-6 text-destructive" />
+      <h2 className="font-display text-2xl">İşlem tamamlanamadı.</h2>
+      <p className="max-w-md text-sm text-muted-foreground">{message}</p>
+      {retry && (
+        <Button variant="outline" size="sm" onClick={retry}>
+          <RotateCw />
+          Tekrar dene
+        </Button>
+      )}
+    </div>
+  );
 }
-
-export function EmptyState({ title, description, action }: { title: string; description: string; action?: ReactNode }) {
-  return <div className="flex min-h-52 flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white/60 p-8 text-center"><div className="mb-4 grid size-11 place-items-center rounded-lg border border-slate-200 bg-white shadow-sm"><Inbox className="size-5 text-slate-400" /></div><p className="font-semibold text-slate-800">{title}</p><p className="mt-1 max-w-sm text-sm text-slate-500">{description}</p>{action && <div className="mt-4">{action}</div>}</div>;
+export function EmptyState({
+  title,
+  description,
+  action,
+}: {
+  title: string;
+  description: string;
+  action?: ReactNode;
+}) {
+  return (
+    <div className="flex min-h-72 flex-col items-center justify-center rounded-md border border-border bg-card p-8 text-center">
+      <FolderOpen className="mb-5 size-6 text-muted-foreground" />
+      <h2 className="font-display text-2xl tracking-tight">{title}</h2>
+      <p className="mt-3 max-w-sm text-sm leading-6 text-muted-foreground">
+        {description}
+      </p>
+      {action && <div className="mt-6">{action}</div>}
+    </div>
+  );
 }

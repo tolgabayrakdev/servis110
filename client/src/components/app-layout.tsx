@@ -1,6 +1,15 @@
-import { CarFront, LayoutDashboard, LogOut, Search, Users } from "lucide-react";
+import { Dialog } from "@base-ui/react/dialog";
+import {
+  CarFront,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  Search,
+  Users,
+  X,
+} from "lucide-react";
 import { type FormEvent, useState } from "react";
-import { NavLink, Outlet, useNavigate } from "react-router";
+import { Link, NavLink, Outlet, useNavigate } from "react-router";
 import { useAuth } from "@/contexts/auth-state";
 import { getInitials } from "@/lib/formatters";
 import { BrandMark } from "./brand-mark";
@@ -19,67 +28,160 @@ export function AppLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [plate, setPlate] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false);
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
+  const [logoutError, setLogoutError] = useState("");
 
   const searchPlate = (event: FormEvent) => {
     event.preventDefault();
-    if (plate.trim()) navigate(`/vehicles?search=${encodeURIComponent(plate.trim())}`);
+    if (plate.trim())
+      navigate(`/vehicles?search=${encodeURIComponent(plate.trim())}`);
   };
-
   const handleLogout = async () => {
-    await logout();
-    navigate("/login", { replace: true });
+    try {
+      await logout();
+      navigate("/login", { replace: true });
+    } catch {
+      setLogoutError("Oturum kapatılamadı. Lütfen tekrar deneyin.");
+    }
   };
-
-  return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-white/10 bg-slate-900 px-4 py-5 text-white lg:flex">
-        <div className="px-2"><BrandMark inverse /></div>
-        <nav className="mt-10 flex flex-1 flex-col gap-1">
-          <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">Operasyon</p>
+  const sidebarContent = (
+    <>
+      <div className="border-b border-border px-6 py-7">
+        <Link to="/dashboard" onClick={() => setMenuOpen(false)}>
+          <BrandMark />
+        </Link>
+      </div>
+      <div className="flex-1 px-3 py-7">
+        <p className="mb-4 px-3 text-xs font-medium text-muted-foreground">
+          Servis yönetimi
+        </p>
+        <nav aria-label="Ana navigasyon" className="grid gap-2">
           {navItems.map(({ to, label, icon: Icon }) => (
-            <NavLink key={to} to={to} className={({ isActive }) => `relative flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition ${isActive ? "bg-blue-600/20 text-white before:absolute before:-left-4 before:h-6 before:w-0.5 before:bg-blue-400" : "text-slate-400 hover:bg-white/[0.06] hover:text-white"}`}>
-              <Icon className="size-[18px]" />{label}
+            <NavLink
+              key={to}
+              to={to}
+              onClick={() => setMenuOpen(false)}
+              className={({ isActive }) =>
+                `flex min-h-12 items-center gap-3 rounded-md border-l-2 px-3 text-sm transition-colors ${isActive ? "border-foreground bg-muted font-semibold text-foreground" : "border-transparent text-secondary-foreground hover:bg-muted/60"}`
+              }
+            >
+              <Icon className="size-[18px]" strokeWidth={1.6} />
+              {label}
             </NavLink>
           ))}
         </nav>
-        <div className="border-t border-white/10 pt-4">
-          <div className="mb-3 flex items-center gap-3 px-2">
-            <div className="grid size-9 place-items-center rounded-md bg-blue-600 text-xs font-bold text-white">{getInitials(user?.name ?? "S")}</div>
-            <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold text-white">{user?.name}</p><p className="truncate text-xs text-slate-500">{user?.email}</p></div>
+      </div>
+      <div className="border-t border-border px-4 py-5">
+        <div className="mb-4 flex items-center gap-3 px-2">
+          <span className="person-initials">
+            {getInitials(user?.name ?? "S")}
+          </span>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-medium">{user?.name}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {user?.role === "owner" ? "İşletme yöneticisi" : "Servis ekibi"}
+            </p>
           </div>
-          <Button variant="ghost" className="w-full justify-start text-slate-400 hover:bg-white/[0.06] hover:text-white" onClick={() => setLogoutDialogOpen(true)}><LogOut />Oturumu kapat</Button>
         </div>
-      </aside>
+        <Button
+          variant="ghost"
+          className="w-full justify-start text-secondary-foreground"
+          onClick={() => {
+            setMenuOpen(false);
+            setLogoutError("");
+            setLogoutDialogOpen(true);
+          }}
+        >
+          <LogOut />
+          Oturumu kapat
+        </Button>
+      </div>
+    </>
+  );
 
-      <div className="lg:pl-64">
-        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur-xl">
-          <div className="flex h-[68px] items-center gap-4 px-4 sm:px-6 lg:px-8">
-            <div className="lg:hidden"><BrandMark compact /></div>
-            <form onSubmit={searchPlate} className="relative max-w-lg flex-1">
-              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-              <Input value={plate} onChange={(event) => setPlate(event.target.value)} aria-label="Plaka ile araç ara" className="h-10 border-slate-200 bg-slate-50 pl-9 shadow-none focus-visible:bg-white" placeholder="Plaka ile hızlı arama" />
+  return (
+    <div className="min-h-svh bg-background">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-card focus:p-3"
+      >
+        İçeriğe geç
+      </a>
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-border bg-card lg:flex">
+        {sidebarContent}
+      </aside>
+      <div className="flex min-h-svh flex-col lg:pl-60">
+        <header className="border-b border-border bg-card">
+          <div className="workspace-width flex min-h-20 items-center gap-3 py-3 sm:gap-6">
+            <Dialog.Root open={menuOpen} onOpenChange={setMenuOpen}>
+              <Dialog.Trigger
+                render={
+                  <Button variant="outline" size="icon" className="lg:hidden" />
+                }
+                aria-label="Menüyü aç"
+              >
+                <Menu />
+              </Dialog.Trigger>
+              <Dialog.Portal>
+                <Dialog.Backdrop className="fixed inset-0 z-40 bg-black/30" />
+                <Dialog.Popup className="fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col border-r border-border bg-card text-foreground outline-none">
+                  <Dialog.Title className="sr-only">Ana menü</Dialog.Title>
+                  <Dialog.Close
+                    render={
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        className="absolute right-2 top-2"
+                      />
+                    }
+                    aria-label="Menüyü kapat"
+                  >
+                    <X />
+                  </Dialog.Close>
+                  {sidebarContent}
+                </Dialog.Popup>
+              </Dialog.Portal>
+            </Dialog.Root>
+            <form onSubmit={searchPlate} className="search-field flex-1">
+              <Search />
+              <Input
+                aria-label="Plaka ile hızlı arama"
+                value={plate}
+                onChange={(event) => setPlate(event.target.value)}
+                placeholder="Plaka ile araç ara"
+                className="bg-card"
+              />
             </form>
-            <ModeToggle />
-            <div className="hidden items-center gap-2 border-l border-slate-200 pl-4 text-xs font-medium text-slate-500 sm:flex"><span className="size-2 rounded-full bg-blue-600 ring-4 ring-blue-50" />Sistem aktif</div>
+            <div className="ml-auto flex items-center gap-3">
+              <span className="hidden text-xs text-muted-foreground md:inline">
+                {new Intl.DateTimeFormat("tr-TR", {
+                  day: "numeric",
+                  month: "long",
+                }).format(new Date())}
+              </span>
+              <ModeToggle />
+            </div>
           </div>
         </header>
-        <main className="mx-auto max-w-[1440px] px-4 py-6 pb-24 sm:px-6 lg:px-8 lg:py-8"><Outlet /></main>
+        <main
+          id="main-content"
+          className="workspace-width flex-1 py-8 sm:py-10"
+        >
+          <Outlet />
+        </main>
+        <footer className="workspace-width border-t border-border py-5 text-xs text-muted-foreground">
+          Servis110 · Dijital servis yönetimi
+        </footer>
       </div>
-
-      <nav className="fixed inset-x-0 bottom-0 z-30 flex h-16 items-center justify-around border-t border-slate-200 bg-white/95 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
-        {navItems.map(({ to, label, icon: Icon }) => (
-          <NavLink key={to} to={to} className={({ isActive }) => `flex min-w-20 flex-col items-center gap-1 text-[11px] font-semibold ${isActive ? "text-blue-700" : "text-slate-400"}`}>
-            <Icon className="size-5" />{label}
-          </NavLink>
-        ))}
-        <button onClick={() => setLogoutDialogOpen(true)} className="flex min-w-16 flex-col items-center gap-1 text-[11px] font-semibold text-slate-400"><LogOut className="size-5" />Çıkış</button>
-      </nav>
       <ConfirmDialog
         open={logoutDialogOpen}
         onOpenChange={setLogoutDialogOpen}
         title="Oturum kapatılsın mı?"
-        description="Yönetim panelinden çıkış yapacaksınız. Devam etmek için yeniden giriş yapmanız gerekir."
+        description={
+          logoutError ||
+          "Panelden çıkış yapacaksınız. Devam etmek için yeniden giriş yapabilirsiniz."
+        }
         confirmLabel="Oturumu kapat"
         destructive={false}
         onConfirm={handleLogout}

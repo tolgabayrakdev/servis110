@@ -1,30 +1,49 @@
 import type { ReactNode } from "react";
-import { ShieldCheck } from "lucide-react";
+import { NavLink, Link } from "react-router";
+import { LockKeyhole } from "lucide-react";
 import { BrandMark } from "./brand-mark";
 import { ModeToggle } from "./mode-toggle";
 
 export function AuthShell({ children }: { children: ReactNode }) {
   return (
-    <main className="grid min-h-screen bg-white lg:grid-cols-[42%_58%]">
-      <section className="relative hidden overflow-hidden border-r border-slate-800 bg-[#101827] p-10 text-white lg:flex lg:flex-col lg:justify-between xl:p-14">
-        <div className="pointer-events-none absolute -bottom-24 -right-8 select-none text-[260px] font-semibold leading-none tracking-[-0.1em] text-white/[0.025]">110</div>
-        <div className="relative"><BrandMark inverse /></div>
-        <div className="relative max-w-md">
-          <div className="mb-7 h-px w-10 bg-blue-400" />
-          <p className="mb-5 text-[11px] font-semibold uppercase tracking-[0.2em] text-blue-300">Servis operasyon platformu</p>
-          <h1 className="text-4xl font-medium leading-[1.16] tracking-[-0.035em] xl:text-[48px]">Servis yönetiminin<br />yeni standardı.</h1>
-          <p className="mt-6 max-w-sm text-sm leading-6 text-slate-400">Müşteri, araç ve bakım süreçleriniz için sade ve güvenilir bir çalışma alanı.</p>
+    <div className="auth-page">
+      <header className="flex items-center justify-between gap-4 border-b border-border px-5 py-5 sm:px-10">
+        <Link to="/login">
+          <BrandMark />
+        </Link>
+        <div className="flex items-center gap-5">
+          <span className="eyebrow hidden sm:inline">
+            Dijital servis yönetimi
+          </span>
+          <ModeToggle />
         </div>
-        <div className="relative flex items-center justify-between text-xs text-slate-600"><span>© 2026 Servis110</span><span className="flex items-center gap-1.5"><ShieldCheck className="size-3.5" />Güvenli erişim</span></div>
-      </section>
-      <section className="relative flex min-h-screen items-center justify-center bg-white px-5 py-10 sm:px-10 lg:px-16">
-        <div className="absolute inset-x-0 top-0 h-1 bg-blue-700 lg:hidden" />
-        <div className="absolute right-5 top-5 sm:right-8 sm:top-8"><ModeToggle /></div>
-        <div className="w-full max-w-[420px]">
-          <div className="mb-12 lg:hidden"><BrandMark /></div>
+      </header>
+      <main className="auth-content">
+        <div className="mb-7 flex items-center justify-center gap-2 text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+          <span className="h-px w-6 bg-border" />
+          Çalışma alanınız
+          <span className="h-px w-6 bg-border" />
+        </div>
+        <div className="auth-form-panel">
+          <nav className="auth-tabs" aria-label="Hesap işlemleri">
+            <NavLink to="/login" className="auth-tab">
+              Giriş yap
+            </NavLink>
+            <NavLink to="/register" className="auth-tab">
+              Hesap oluştur
+            </NavLink>
+          </nav>
           {children}
         </div>
-      </section>
-    </main>
+        <p className="mt-6 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+          <LockKeyhole className="size-3.5" />
+          Size ve ekibinize ait bir çalışma alanı.
+        </p>
+      </main>
+      <footer className="flex flex-wrap justify-between gap-3 px-5 py-6 text-[11px] text-muted-foreground sm:px-10">
+        <span>© {new Date().getFullYear()} Servis110</span>
+        <span>Müşteri. Araç. Servis.</span>
+      </footer>
+    </div>
   );
 }

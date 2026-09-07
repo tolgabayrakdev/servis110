@@ -1,72 +1,85 @@
-import { createContext, useContext, useLayoutEffect, useState } from "react"
+import { createContext, useContext, useLayoutEffect, useState } from "react";
 
-type Theme = "dark" | "light" | "system"
+type Theme = "dark" | "light" | "system";
 
 type ThemeProviderProps = {
-  children: React.ReactNode
-  defaultTheme?: Theme
-  storageKey?: string
-}
+  children: React.ReactNode;
+  defaultTheme?: Theme;
+  storageKey?: string;
+};
 
 type ThemeProviderState = {
-  theme: Theme
-  setTheme: (theme: Theme) => void
-}
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
+};
 
-const initialState: ThemeProviderState = {
-  theme: "system",
-  setTheme: () => null,
-}
-
-const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
+const ThemeProviderContext = createContext<ThemeProviderState | undefined>(
+  undefined,
+);
 
 export function ThemeProvider({
   children,
-  defaultTheme = "system",
+  defaultTheme = "light",
   storageKey = "servis110-theme",
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
-  )
+  const [theme, setTheme] = useState<Theme>(() => {
+    try {
+      const stored = localStorage.getItem(storageKey);
+      return stored === "light" || stored === "dark" || stored === "system"
+        ? stored
+        : defaultTheme;
+    } catch {
+      return defaultTheme;
+    }
+  });
 
   useLayoutEffect(() => {
-    const root = window.document.documentElement
-    const media = window.matchMedia("(prefers-color-scheme: dark)")
+    const root = window.document.documentElement;
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
     const applyTheme = () => {
-      const resolvedTheme = theme === "system" ? (media.matches ? "dark" : "light") : theme
-      root.classList.remove("light", "dark")
-      root.classList.add(resolvedTheme)
-      root.style.colorScheme = resolvedTheme
-      root.style.backgroundColor = resolvedTheme === "dark" ? "#0b1220" : "#f7f8fa"
-    }
+      const resolvedTheme =
+        theme === "system" ? (media.matches ? "dark" : "light") : theme;
+      root.classList.remove("light", "dark");
+      root.classList.add(resolvedTheme);
+      root.style.colorScheme = resolvedTheme;
+      root.style.backgroundColor =
+        resolvedTheme === "dark" ? "#191919" : "#fafafa";
+      document
+        .querySelector('meta[name="theme-color"]')
+        ?.setAttribute("content", root.style.backgroundColor);
+    };
 
-    applyTheme()
-    if (theme === "system") media.addEventListener("change", applyTheme)
-    return () => media.removeEventListener("change", applyTheme)
-  }, [theme])
+    applyTheme();
+    if (theme === "system") media.addEventListener("change", applyTheme);
+    return () => media.removeEventListener("change", applyTheme);
+  }, [theme]);
 
   const value = {
     theme,
     setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme)
-      setTheme(theme)
+      try {
+        localStorage.setItem(storageKey, theme);
+      } catch {
+        /* Storage may be unavailable in private browsing. */
+      }
+      setTheme(theme);
     },
-  }
+  };
 
   return (
     <ThemeProviderContext.Provider {...props} value={value}>
       {children}
     </ThemeProviderContext.Provider>
-  )
+  );
 }
 
 // oxlint-disable-next-line react/only-export-components -- tema hook'u sağlayıcıyla aynı bağlamı paylaşır
 export const useTheme = () => {
-  const context = useContext(ThemeProviderContext)
+  const context = useContext(ThemeProviderContext);
 
   if (context === undefined)
-    throw new Error("useTheme must be used within a ThemeProvider")
+    throw new Error("useTheme must be used within a ThemeProvider");
 
-  return context
-}
+  return context;
+};

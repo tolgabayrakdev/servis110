@@ -4,26 +4,40 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#142033" />
-    <meta name="description" content="Servis110 dijital servis ve bakım yönetim platformu" />
+    <meta name="theme-color" content="#fafafa" />
+    <meta
+      name="description"
+      content="Servis110 dijital servis ve bakım yönetim platformu"
+    />
     <title>Servis110 | Dijital Servis Yönetimi</title>
     <script>
       (function () {
         var theme = "light";
         try {
           var savedTheme = localStorage.getItem("servis110-theme");
-          if (savedTheme === "light" || savedTheme === "dark" || savedTheme === "system") {
+          if (
+            savedTheme === "light" ||
+            savedTheme === "dark" ||
+            savedTheme === "system"
+          ) {
             theme = savedTheme;
           }
         } catch (_) {}
 
-        var resolvedTheme = theme === "system"
-          ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
-          : theme;
+        var resolvedTheme =
+          theme === "system"
+            ? window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light"
+            : theme;
         var root = document.documentElement;
         root.classList.add(resolvedTheme);
         root.style.colorScheme = resolvedTheme;
-        root.style.backgroundColor = resolvedTheme === "dark" ? "#0b1220" : "#f7f8fa";
+        root.style.backgroundColor =
+          resolvedTheme === "dark" ? "#191919" : "#fafafa";
+        document
+          .querySelector('meta[name="theme-color"]')
+          .setAttribute("content", root.style.backgroundColor);
       })();
     </script>
   </head>
