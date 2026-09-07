@@ -12,7 +12,7 @@ export type User = {
 
 export type CustomerInput = {
   name: string;
-  phone: string;
+  phone?: string | null;
   email?: string | null;
   address?: string | null;
   notes?: string | null;

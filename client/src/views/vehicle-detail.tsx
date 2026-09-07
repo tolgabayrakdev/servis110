@@ -16,6 +16,18 @@ import type { ServiceRecord, Vehicle } from "@/types/api-types";
 
 type ServiceForm = { serviceDate: string; mileage: string; serviceType: string; operations: string; replacedParts: string; description: string; nextServiceDate: string; nextServiceMileage: string };
 const today = new Date().toISOString().slice(0, 10);
+const serviceTypes = [
+  "Periyodik bakım",
+  "Yağ ve filtre değişimi",
+  "Lastik onarımı / değişimi",
+  "Arıza tespiti",
+  "Mekanik onarım",
+  "Elektrik / elektronik",
+  "Fren sistemi",
+  "Klima bakımı",
+  "Kaporta / boya",
+  "Muayene hazırlığı",
+];
 
 export default function VehicleDetail() {
   const { id = "" } = useParams();
@@ -26,7 +38,7 @@ export default function VehicleDetail() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [form, setForm] = useState<ServiceForm>({ serviceDate: today, mileage: "", serviceType: "Periyodik bakım", operations: "", replacedParts: "", description: "", nextServiceDate: "", nextServiceMileage: "" });
+  const [form, setForm] = useState<ServiceForm>({ serviceDate: today, mileage: "", serviceType: "", operations: "", replacedParts: "", description: "", nextServiceDate: "", nextServiceMileage: "" });
 
   const load = useCallback(async () => {
     try {
@@ -42,7 +54,7 @@ export default function VehicleDetail() {
   useEffect(() => { void load(); }, [load]);
 
   const openService = () => {
-    setForm({ serviceDate: today, mileage: vehicle?.currentMileage.toString() ?? "", serviceType: "Periyodik bakım", operations: "", replacedParts: "", description: "", nextServiceDate: "", nextServiceMileage: "" });
+    setForm({ serviceDate: today, mileage: vehicle?.currentMileage.toString() ?? "", serviceType: "", operations: "", replacedParts: "", description: "", nextServiceDate: "", nextServiceMileage: "" });
     setDialogOpen(true);
   };
   const save = async (event: FormEvent) => {
@@ -95,12 +107,12 @@ export default function VehicleDetail() {
         </div>
 
         <div className="space-y-5"><Card><CardHeader><CardTitle className="flex items-center gap-2"><QrCode className="size-4 text-blue-700" />Dijital servis karnesi</CardTitle><p className="text-xs leading-5 text-slate-400">Müşteriniz QR kodu okutarak aracın servis geçmişini görüntüleyebilir.</p></CardHeader><CardContent><div className="mx-auto w-fit border border-slate-200 bg-white p-4"><QRCode value={vehicle.serviceCardUrl} size={180} fgColor="#0f172a" /></div><Button variant="outline" className="mt-4 w-full" onClick={() => navigator.clipboard.writeText(vehicle.serviceCardUrl)}>Bağlantıyı kopyala</Button></CardContent></Card>
-          <Card size="sm"><CardContent><p className="text-xs font-bold uppercase tracking-wide text-slate-400">İletişim</p><p className="mt-2 font-semibold">{vehicle.customerName}</p><a href={`tel:${vehicle.customerPhone}`} className="mt-1 text-sm text-blue-700 hover:underline">{vehicle.customerPhone}</a></CardContent></Card>
+          <Card size="sm"><CardContent><p className="text-xs font-bold uppercase tracking-wide text-slate-400">İletişim</p><p className="mt-2 font-semibold">{vehicle.customerName}</p>{vehicle.customerPhone ? <a href={`tel:${vehicle.customerPhone}`} className="mt-1 text-sm text-blue-700 hover:underline">{vehicle.customerPhone}</a> : <p className="mt-1 text-sm text-slate-400">Telefon belirtilmedi</p>}</CardContent></Card>
         </div>
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-2xl"><DialogHeader><DialogTitle>Yeni servis kaydı</DialogTitle><DialogDescription>{vehicle.plate} · {vehicle.brand} {vehicle.model} için yapılan işlemleri kaydedin.</DialogDescription></DialogHeader>
-        <form onSubmit={save} className="grid gap-5"><div className="grid gap-4 sm:grid-cols-3"><FormField label="Servis tarihi" required><Input type="date" value={form.serviceDate} onChange={(e) => setForm({ ...form, serviceDate: e.target.value })} required /></FormField><FormField label="Kilometre" required><Input type="number" min="0" value={form.mileage} onChange={(e) => setForm({ ...form, mileage: e.target.value })} required /></FormField><FormField label="İşlem türü" required><Input value={form.serviceType} onChange={(e) => setForm({ ...form, serviceType: e.target.value })} required /></FormField></div>
+        <form onSubmit={save} className="grid gap-5"><div className="grid gap-4 sm:grid-cols-3"><FormField label="Servis tarihi" required><Input type="date" value={form.serviceDate} onChange={(e) => setForm({ ...form, serviceDate: e.target.value })} required /></FormField><FormField label="Kilometre" required><Input type="number" min="0" value={form.mileage} onChange={(e) => setForm({ ...form, mileage: e.target.value })} required /></FormField><FormField label="İşlem türü" required><Input list="service-type-options" value={form.serviceType} placeholder="Seçin veya yazın" onChange={(e) => setForm({ ...form, serviceType: e.target.value })} required /><datalist id="service-type-options">{serviceTypes.map((type) => <option key={type} value={type} />)}</datalist></FormField></div>
           <div className="grid gap-4 sm:grid-cols-2"><FormField label="Yapılan işlemler"><Textarea value={form.operations} onChange={(e) => setForm({ ...form, operations: e.target.value })} placeholder={"Her satıra bir işlem\nMotor yağı değişimi\nFiltre kontrolü"} /></FormField><FormField label="Değiştirilen parçalar"><Textarea value={form.replacedParts} onChange={(e) => setForm({ ...form, replacedParts: e.target.value })} placeholder={"Her satıra bir parça\nYağ filtresi\nPolen filtresi"} /></FormField></div>
           <FormField label="Açıklama"><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="İşlemle ilgili ek notlar..." /></FormField>
           <div className="rounded-xl border border-amber-100 bg-amber-50/50 p-4"><p className="mb-4 text-sm font-semibold text-amber-900">Sonraki bakım hatırlatması</p><div className="grid gap-4 sm:grid-cols-2"><FormField label="Sonraki bakım tarihi"><Input type="date" min={form.serviceDate} value={form.nextServiceDate} onChange={(e) => setForm({ ...form, nextServiceDate: e.target.value })} /></FormField><FormField label="Sonraki bakım kilometresi"><Input type="number" min={Number(form.mileage) + 1 || 0} value={form.nextServiceMileage} onChange={(e) => setForm({ ...form, nextServiceMileage: e.target.value })} /></FormField></div></div>

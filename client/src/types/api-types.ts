@@ -9,7 +9,7 @@ export type User = {
 export type Customer = {
   id: string;
   name: string;
-  phone: string;
+  phone?: string | null;
   email?: string | null;
   address?: string | null;
   notes?: string | null;
@@ -20,7 +20,7 @@ export type Vehicle = {
   id: string;
   customerId: string;
   customerName: string;
-  customerPhone: string;
+  customerPhone?: string | null;
   plate: string;
   brand: string;
   model: string;

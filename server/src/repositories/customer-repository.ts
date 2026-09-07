@@ -6,7 +6,7 @@ const columns = ["id", "name", "phone", "email", "address", "notes", "created_at
 
 const toRow = (input: Partial<CustomerInput>) => ({
   ...(input.name !== undefined && { name: input.name }),
-  ...(input.phone !== undefined && { phone: input.phone }),
+  ...(input.phone !== undefined && { phone: input.phone || null }),
   ...(input.email !== undefined && { email: input.email || null }),
   ...(input.address !== undefined && { address: input.address || null }),
   ...(input.notes !== undefined && { notes: input.notes || null }),
