@@ -49,7 +49,7 @@ export function AppLayout() {
   };
   const sidebarContent = (
     <>
-      <div className="border-b border-border px-6 py-7">
+      <div className=" px-6 py-7">
         <Link to="/dashboard" onClick={() => setMenuOpen(false)}>
           <BrandMark />
         </Link>
