@@ -128,13 +128,15 @@ export default function Dashboard() {
       />
       <section
         aria-label="Servis istatistikleri"
-        className="mb-9 grid grid-cols-2 gap-x-5 sm:gap-x-0 lg:grid-cols-4"
+        className="mb-9 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
       >
         {stats.map(({ label, value, icon: Icon }, index) => (
           <div key={label} className="metric">
             <div className="flex items-center justify-between gap-2">
               <span className="text-xs text-muted-foreground">{label}</span>
-              <Icon className="size-4 text-muted-foreground" />
+              <span className="grid size-9 place-items-center rounded-md bg-primary/10 text-primary">
+                <Icon className="size-4" />
+              </span>
             </div>
             <div className="flex items-end justify-between">
               <span className="metric-value">{value}</span>

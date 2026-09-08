@@ -28,47 +28,47 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --radius-sm: 0.125rem;
-  --radius-md: 0.25rem;
-  --radius-lg: 0.375rem;
-  --radius-xl: 0.375rem;
-  --radius-2xl: 0.5rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
 }
 
 :root {
   color-scheme: light;
-  --background: #fafafa;
-  --foreground: #262626;
+  --background: #f8f9ff;
+  --foreground: #20203a;
   --card: #ffffff;
-  --primary: #292929;
+  --primary: #4f46e5;
   --primary-foreground: #ffffff;
-  --secondary-foreground: #525252;
-  --muted: #f5f5f5;
-  --muted-foreground: #646464;
-  --accent: #f0f0f0;
+  --secondary-foreground: #55556f;
+  --muted: #f0f1fb;
+  --muted-foreground: #696984;
+  --accent: #e9eaff;
   --destructive: #b63d38;
   --warning: #98651c;
-  --border: #e5e5e5;
-  --input: #d1d1d1;
-  --ring: #7a7a7a;
+  --border: #e1e3f0;
+  --input: #c9cce0;
+  --ring: #6366f1;
 }
 
 .dark {
   color-scheme: dark;
-  --background: #191919;
-  --foreground: #f5f5f5;
-  --card: #232323;
-  --primary: #ededed;
-  --primary-foreground: #252525;
-  --secondary-foreground: #c7c7c7;
-  --muted: #303030;
-  --muted-foreground: #adadad;
-  --accent: #383838;
+  --background: #11111d;
+  --foreground: #f3f3fb;
+  --card: #1a1a2b;
+  --primary: #818cf8;
+  --primary-foreground: #171728;
+  --secondary-foreground: #c7c8dc;
+  --muted: #25253a;
+  --muted-foreground: #a7a8bf;
+  --accent: #2c2d50;
   --destructive: #f08b84;
   --warning: #dbb47b;
-  --border: #3d3d3d;
-  --input: #505050;
-  --ring: #b5b5b5;
+  --border: #34354d;
+  --input: #4a4b67;
+  --ring: #818cf8;
 }
 
 @layer base {
@@ -80,6 +80,10 @@
   }
   body {
     @apply m-0 bg-background antialiased;
+    background-image:
+      radial-gradient(circle at 85% 5%, color-mix(in srgb, var(--primary) 8%, transparent) 0, transparent 28rem),
+      radial-gradient(circle at 10% 90%, color-mix(in srgb, var(--primary) 5%, transparent) 0, transparent 24rem);
+    background-attachment: fixed;
     min-width: 320px;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
@@ -108,7 +112,7 @@
     background: var(--card);
   }
   ::selection {
-    background: var(--accent);
+    background: color-mix(in srgb, var(--primary) 25%, transparent);
     color: var(--foreground);
   }
 }
@@ -130,7 +134,7 @@
     @apply flex flex-wrap items-center gap-2;
   }
   .panel {
-    @apply overflow-hidden rounded-md border border-border bg-card;
+    @apply overflow-hidden rounded-lg border border-border bg-card;
   }
   .panel-heading {
     @apply flex items-center justify-between gap-3 border-b border-border px-6 py-5;
@@ -172,7 +176,7 @@
     @apply inline-flex whitespace-nowrap rounded-md border border-border bg-muted/50 px-2.5 py-1 font-mono text-sm font-semibold tracking-wide;
   }
   .person-initials {
-    @apply grid size-10 shrink-0 place-items-center rounded-md border border-border bg-muted/70 text-xs font-medium;
+    @apply grid size-10 shrink-0 place-items-center rounded-md border border-primary/15 bg-primary/10 text-xs font-semibold text-primary;
   }
   .form-section {
     @apply grid gap-4 border-t border-border pt-5;
@@ -181,13 +185,17 @@
     @apply text-xs leading-5 text-muted-foreground;
   }
   .auth-page {
-    @apply flex min-h-svh flex-col bg-background;
+    @apply flex min-h-svh flex-col;
+    background:
+      radial-gradient(circle at 15% 15%, color-mix(in srgb, var(--primary) 14%, transparent), transparent 28rem),
+      radial-gradient(circle at 90% 85%, color-mix(in srgb, var(--primary) 9%, transparent), transparent 24rem),
+      var(--background);
   }
   .auth-content {
     @apply mx-auto flex w-full max-w-[500px] flex-1 flex-col justify-center px-5 py-10 sm:px-0;
   }
   .auth-form-panel {
-    @apply rounded-md border border-border bg-card p-6 sm:p-10;
+    @apply rounded-xl border border-border bg-card p-6 shadow-sm shadow-indigo-950/5 sm:p-10;
   }
   .auth-tabs {
     @apply mb-8 grid grid-cols-2 rounded-md bg-muted p-1;
@@ -196,10 +204,10 @@
     @apply rounded-md px-4 py-2 text-center text-sm font-medium text-muted-foreground transition-colors;
   }
   .auth-tab[aria-current="page"] {
-    @apply bg-card text-foreground shadow-sm;
+    @apply bg-card text-primary shadow-sm;
   }
   .metric {
-    @apply flex flex-col justify-between gap-6 border-t border-border py-6 sm:px-6;
+    @apply flex flex-col justify-between gap-6 rounded-lg border border-border bg-card p-5 transition-colors hover:border-primary/20 sm:p-6;
   }
   .metric-value {
     @apply text-4xl font-medium tracking-[-0.07em] tabular-nums;

@@ -65,7 +65,7 @@ export function AppLayout() {
               to={to}
               onClick={() => setMenuOpen(false)}
               className={({ isActive }) =>
-                `flex min-h-12 items-center gap-3 rounded-md border-l-2 px-3 text-sm transition-colors ${isActive ? "border-foreground bg-muted font-semibold text-foreground" : "border-transparent text-secondary-foreground hover:bg-muted/60"}`
+                `flex min-h-12 items-center gap-3 rounded-md border px-3 text-sm transition-colors ${isActive ? "border-primary/15 bg-primary/10 font-semibold text-primary" : "border-transparent text-secondary-foreground hover:bg-muted/70 hover:text-foreground"}`
               }
             >
               <Icon className="size-[18px]" strokeWidth={1.6} />
@@ -110,11 +110,11 @@ export function AppLayout() {
       >
         İçeriğe geç
       </a>
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-border bg-card lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-border bg-card/95 backdrop-blur lg:flex">
         {sidebarContent}
       </aside>
       <div className="flex min-h-svh flex-col lg:pl-60">
-        <header className="border-b border-border bg-card">
+        <header className="border-b border-border bg-card/85 backdrop-blur-xl">
           <div className="workspace-width flex min-h-20 items-center gap-3 py-3 sm:gap-6">
             <Dialog.Root open={menuOpen} onOpenChange={setMenuOpen}>
               <Dialog.Trigger
