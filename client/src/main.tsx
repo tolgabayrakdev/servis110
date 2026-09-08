@@ -15,6 +15,9 @@ import Vehicles from "./views/vehicles";
 import NotFound from "./views/not-found";
 import SettingsView from "./views/settings";
 import { ThemeProvider } from "./components/theme-provider";
+import ForgotPassword from "./views/forgot-password";
+import ResetPassword from "./views/reset-password";
+import VerifyEmail from "./views/verify-email";
 
 const router = createBrowserRouter([
   {
@@ -23,6 +26,9 @@ const router = createBrowserRouter([
   },
   { path: "/login", element: <Login /> },
   { path: "/register", element: <Register /> },
+  { path: "/forgot-password", element: <ForgotPassword /> },
+  { path: "/reset-password", element: <ResetPassword /> },
+  { path: "/verify-email", element: <VerifyEmail /> },
   { path: "/service-card/:token", element: <ServiceCard /> },
   {
     element: <AuthGuard />,

@@ -26,7 +26,9 @@ export default function Register() {
         email: String(data.get("email")),
         password: String(data.get("password")),
       });
-      navigate("/dashboard", { replace: true });
+      navigate(`/verify-email?email=${encodeURIComponent(String(data.get("email")))}`, {
+        replace: true,
+      });
     } catch (caught) {
       setError(
         caught instanceof Error ? caught.message : "Hesap oluşturulamadı",

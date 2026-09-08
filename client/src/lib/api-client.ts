@@ -1,6 +1,6 @@
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000/api/v1";
 
-type ApiErrorBody = { error?: { message?: string; details?: unknown } };
+type ApiErrorBody = { error?: { code?: string; message?: string; details?: unknown } };
 
 const getValidationMessage = (details: unknown): string | undefined => {
   if (!details || typeof details !== "object") return undefined;
@@ -18,11 +18,13 @@ const getValidationMessage = (details: unknown): string | undefined => {
 
 export class ApiError extends Error {
   status: number;
+  code?: string;
   details?: unknown;
 
-  constructor(status: number, message: string, details?: unknown) {
+  constructor(status: number, message: string, details?: unknown, code?: string) {
     super(message);
     this.status = status;
+    this.code = code;
     this.details = details;
   }
 }
@@ -47,6 +49,7 @@ export const apiClient = {
           body.error?.message ??
           "İşlem tamamlanamadı",
         body.error?.details,
+        body.error?.code,
       );
     return body;
   },

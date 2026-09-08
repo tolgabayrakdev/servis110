@@ -10,6 +10,7 @@ const userColumns = [
   "password_hash as passwordHash",
   "role",
   "is_active as isActive",
+  "email_verified_at as emailVerifiedAt",
 ];
 
 const userQuery = () =>

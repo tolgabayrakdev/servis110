@@ -39,6 +39,10 @@ Tüm özel kayıtlar JWT içindeki `workshopId` ile filtrelenir. Bir servis baş
 | ---------------- | --------------------------------------------- | -------------------------------------------------- |
 | POST             | `/api/v1/auth/register`                       | Servis ve işletme sahibi oluşturur                 |
 | POST             | `/api/v1/auth/login`                          | JWT üretir                                         |
+| POST             | `/api/v1/auth/verify-email`                   | 6 haneli kodla e-postayı doğrular                  |
+| POST             | `/api/v1/auth/resend-verification`            | Yeni doğrulama kodu gönderir                       |
+| POST             | `/api/v1/auth/forgot-password`                | 15 dakikalık sıfırlama bağlantısı gönderir         |
+| POST             | `/api/v1/auth/reset-password`                 | Tek kullanımlık token ile yeni parola belirler     |
 | POST             | `/api/v1/auth/logout`                         | Oturum cookie'sini temizler                        |
 | GET              | `/api/v1/auth/me`                             | Aktif kullanıcıyı döndürür                         |
 | PATCH            | `/api/v1/auth/account`                        | Ad, e-posta ve servis adını günceller              |
@@ -54,7 +58,7 @@ Tüm özel kayıtlar JWT içindeki `workshopId` ile filtrelenir. Bir servis baş
 | GET              | `/api/v1/dashboard`                           | Sayaçlar, son servisler ve bakım uyarıları         |
 | GET              | `/api/v1/public/service-cards/:token`         | Public dijital servis karnesi                      |
 
-Register ve login sonucunda JWT, JavaScript'in erişemediği `HttpOnly` cookie'ye yazılır. Korumalı endpoint isteklerinde tarayıcı tarafında cookie gönderimi açılmalıdır:
+E-posta doğrulaması ve login sonucunda JWT, JavaScript'in erişemediği `HttpOnly` cookie'ye yazılır. Korumalı endpoint isteklerinde tarayıcı tarafında cookie gönderimi açılmalıdır:
 
 ```ts
 fetch("http://localhost:3000/api/v1/auth/me", {
@@ -65,3 +69,18 @@ fetch("http://localhost:3000/api/v1/auth/me", {
 Axios kullanılıyorsa `withCredentials: true` verilmelidir. Middleware, CLI ve harici API istemcileri için `Authorization: Bearer <token>` başlığını geriye dönük olarak da destekler.
 
 Araç cevaplarındaki `serviceCardUrl` değeri frontend'de `react-qr-code` bileşenine doğrudan verilebilir. Backend QR görseli üretmez.
+
+## E-posta doğrulama
+
+Yeni kayıtlarda oturum açılmadan önce e-posta doğrulaması gerekir. Altı haneli
+kod 10 dakika geçerlidir ve yeni kod gönderildiğinde önceki kod geçersiz olur.
+Doğrulanmamış bir hesap doğru parolayla giriş yapmayı denerse yeni kod otomatik
+olarak gönderilir.
+
+## Parola sıfırlama e-postası
+
+Production ortamında `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`,
+`SMTP_PASS` ve `SMTP_FROM` değerlerini e-posta sağlayıcınıza göre ayarlayın.
+Geliştirme ortamında `SMTP_HOST` boş bırakılırsa gönderilecek sıfırlama bağlantısı
+sunucu konsoluna yazılır. Bağlantı 15 dakika geçerlidir ve yalnızca bir kez
+kullanılabilir.

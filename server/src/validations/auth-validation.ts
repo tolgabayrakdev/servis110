@@ -12,6 +12,27 @@ export const loginSchema = z.object({
   password: z.string().min(1).max(72),
 });
 
+export const verifyEmailSchema = z.object({
+  email: z.email("Geçerli bir e-posta adresi girin").toLowerCase(),
+  code: z.string().regex(/^\d{6}$/, "Doğrulama kodu 6 haneli olmalıdır"),
+});
+
+export const resendVerificationSchema = z.object({
+  email: z.email("Geçerli bir e-posta adresi girin").toLowerCase(),
+});
+
+export const forgotPasswordSchema = z.object({
+  email: z.email("Geçerli bir e-posta adresi girin").toLowerCase(),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().length(64, "Sıfırlama bağlantısı geçersiz"),
+  newPassword: z
+    .string()
+    .min(8, "Yeni parola en az 8 karakter olmalıdır")
+    .max(72),
+});
+
 export const updateAccountSchema = z.object({
   name: z
     .string()

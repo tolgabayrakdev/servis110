@@ -18,6 +18,7 @@ export type AuthContextValue = {
   loading: boolean;
   login: (input: LoginInput) => Promise<void>;
   register: (input: RegisterInput) => Promise<void>;
+  verifyEmail: (input: { email: string; code: string }) => Promise<void>;
   logout: () => Promise<void>;
   updateAccount: (input: UpdateAccountInput) => Promise<void>;
   changePassword: (input: ChangePasswordInput) => Promise<void>;

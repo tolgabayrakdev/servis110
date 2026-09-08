@@ -5,9 +5,13 @@ import { validate } from "../middlewares/validate.js";
 import {
   changePasswordSchema,
   deleteAccountSchema,
+  forgotPasswordSchema,
   loginSchema,
   registerSchema,
+  resendVerificationSchema,
+  resetPasswordSchema,
   updateAccountSchema,
+  verifyEmailSchema,
 } from "../validations/auth-validation.js";
 
 export const authRoutes = Router();
@@ -21,6 +25,26 @@ authRoutes.post(
   "/login",
   validate({ body: loginSchema }),
   authController.login,
+);
+authRoutes.post(
+  "/verify-email",
+  validate({ body: verifyEmailSchema }),
+  authController.verifyEmail,
+);
+authRoutes.post(
+  "/resend-verification",
+  validate({ body: resendVerificationSchema }),
+  authController.resendVerificationCode,
+);
+authRoutes.post(
+  "/forgot-password",
+  validate({ body: forgotPasswordSchema }),
+  authController.forgotPassword,
+);
+authRoutes.post(
+  "/reset-password",
+  validate({ body: resetPasswordSchema }),
+  authController.resetPassword,
 );
 authRoutes.post("/logout", authController.logout);
 authRoutes.get("/me", authenticate, authController.me);

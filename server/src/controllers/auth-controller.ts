@@ -4,15 +4,44 @@ import { authCookie } from "../utils/auth-cookie.js";
 
 export const authController = {
   async register(request: Request, response: Response) {
-    const { token, ...data } = await authService.register(request.body);
+    response.status(201).json({ data: await authService.register(request.body) });
+  },
+
+  async verifyEmail(request: Request, response: Response) {
+    const { token, ...data } = await authService.verifyEmail(
+      request.body.email,
+      request.body.code,
+    );
     authCookie.set(response, token);
-    response.status(201).json({ data });
+    response.json({ data });
+  },
+
+  async resendVerificationCode(request: Request, response: Response) {
+    await authService.resendVerificationCode(request.body.email);
+    response.json({
+      data: { message: "Hesap doğrulanmamışsa yeni kod gönderildi." },
+    });
   },
 
   async login(request: Request, response: Response) {
     const { token, ...data } = await authService.login(request.body);
     authCookie.set(response, token);
     response.json({ data });
+  },
+
+  async forgotPassword(request: Request, response: Response) {
+    await authService.forgotPassword(request.body.email);
+    response.json({
+      data: {
+        message:
+          "Bu e-posta ile kayıtlı bir hesap varsa sıfırlama bağlantısı gönderildi.",
+      },
+    });
+  },
+
+  async resetPassword(request: Request, response: Response) {
+    await authService.resetPassword(request.body.token, request.body.newPassword);
+    response.status(204).send();
   },
 
   async me(request: Request, response: Response) {

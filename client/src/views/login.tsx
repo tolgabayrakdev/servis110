@@ -6,6 +6,7 @@ import { FormField } from "@/components/form-field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/auth-state";
+import { ApiError } from "@/lib/api-client";
 
 export default function Login() {
   const { login, user } = useAuth();
@@ -28,6 +29,12 @@ export default function Login() {
       });
       navigate("/dashboard", { replace: true });
     } catch (caught) {
+      if (caught instanceof ApiError && caught.code === "EMAIL_NOT_VERIFIED") {
+        const details = caught.details as { email?: string } | undefined;
+        const email = details?.email ?? String(data.get("email"));
+        navigate(`/verify-email?email=${encodeURIComponent(email)}`);
+        return;
+      }
       setError(caught instanceof Error ? caught.message : "Giriş yapılamadı");
     } finally {
       setSubmitting(false);
@@ -81,6 +88,14 @@ export default function Login() {
             </button>
           </div>
         </FormField>
+        <div className="-mt-2 text-right">
+          <Link
+            to="/forgot-password"
+            className="text-sm font-semibold text-primary hover:underline"
+          >
+            Şifremi unuttum
+          </Link>
+        </div>
         {error && (
           <div className="rounded-md bg-destructive/10 px-3 py-2.5 text-sm font-medium text-destructive">
             {error}

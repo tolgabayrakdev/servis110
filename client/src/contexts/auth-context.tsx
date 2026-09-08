@@ -29,8 +29,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(response.data.user);
       },
       async register(input) {
+        await apiClient.post("/auth/register", input);
+      },
+      async verifyEmail(input) {
         const response = await apiClient.post<{ data: { user: User } }>(
-          "/auth/register",
+          "/auth/verify-email",
           input,
         );
         setUser(response.data.user);

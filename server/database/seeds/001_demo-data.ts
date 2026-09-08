@@ -13,6 +13,7 @@ export async function seed(knex: Knex): Promise<void> {
       email,
       password_hash: await bcrypt.hash("Demo1234!", 12),
       role: "owner",
+      email_verified_at: trx.fn.now(),
     });
   });
 }
