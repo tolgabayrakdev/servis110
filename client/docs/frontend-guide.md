@@ -21,6 +21,7 @@ Authentication JWT'yi JavaScript'e açmaz. Tüm API çağrıları `credentials: 
 - `/customers`: müşteri listeleme, arama, ekleme ve düzenleme
 - `/vehicles`: araç listeleme, plaka arama, ekleme ve düzenleme
 - `/vehicles/:id`: servis geçmişi, yeni servis kaydı ve QR kod
+- `/settings`: hesap, servis adı, parola ve hesap silme işlemleri
 - `/service-card/:token`: müşteriye açık dijital servis karnesi
 
 ## Tasarım sistemi

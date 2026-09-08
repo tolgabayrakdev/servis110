@@ -5,6 +5,7 @@ import {
   LogOut,
   Menu,
   Search,
+  Settings,
   Users,
   X,
 } from "lucide-react";
@@ -22,6 +23,7 @@ const navItems = [
   { to: "/dashboard", label: "Genel bakış", icon: LayoutDashboard },
   { to: "/customers", label: "Müşteriler", icon: Users },
   { to: "/vehicles", label: "Araçlar", icon: CarFront },
+  { to: "/settings", label: "Ayarlar", icon: Settings },
 ];
 
 export function AppLayout() {

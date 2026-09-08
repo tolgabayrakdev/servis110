@@ -13,6 +13,7 @@ import ServiceCard from "./views/service-card";
 import VehicleDetail from "./views/vehicle-detail";
 import Vehicles from "./views/vehicles";
 import NotFound from "./views/not-found";
+import SettingsView from "./views/settings";
 import { ThemeProvider } from "./components/theme-provider";
 
 const router = createBrowserRouter([
@@ -33,6 +34,7 @@ const router = createBrowserRouter([
           { path: "/customers", element: <Customers /> },
           { path: "/vehicles", element: <Vehicles /> },
           { path: "/vehicles/:id", element: <VehicleDetail /> },
+          { path: "/settings", element: <SettingsView /> },
         ],
       },
     ],

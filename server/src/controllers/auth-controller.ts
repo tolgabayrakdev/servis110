@@ -16,10 +16,41 @@ export const authController = {
   },
 
   async me(request: Request, response: Response) {
-    response.json({ data: await authService.me(request.user!.id, request.user!.workshopId) });
+    response.json({
+      data: await authService.me(request.user!.id, request.user!.workshopId),
+    });
   },
 
   async logout(_request: Request, response: Response) {
+    authCookie.clear(response);
+    response.status(204).send();
+  },
+
+  async updateAccount(request: Request, response: Response) {
+    response.json({
+      data: await authService.updateAccount(
+        request.user!.id,
+        request.user!.workshopId,
+        request.body,
+      ),
+    });
+  },
+
+  async changePassword(request: Request, response: Response) {
+    await authService.changePassword(
+      request.user!.id,
+      request.user!.workshopId,
+      request.body,
+    );
+    response.status(204).send();
+  },
+
+  async deleteAccount(request: Request, response: Response) {
+    await authService.deleteAccount(
+      request.user!.id,
+      request.user!.workshopId,
+      request.body.password,
+    );
     authCookie.clear(response);
     response.status(204).send();
   },

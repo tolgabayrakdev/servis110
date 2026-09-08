@@ -7,9 +7,11 @@ const getValidationMessage = (details: unknown): string | undefined => {
   const value = details as { formErrors?: unknown; fieldErrors?: unknown };
   const formErrors = Array.isArray(value.formErrors) ? value.formErrors : [];
   if (typeof formErrors[0] === "string") return formErrors[0];
-  if (!value.fieldErrors || typeof value.fieldErrors !== "object") return undefined;
+  if (!value.fieldErrors || typeof value.fieldErrors !== "object")
+    return undefined;
   for (const messages of Object.values(value.fieldErrors)) {
-    if (Array.isArray(messages) && typeof messages[0] === "string") return messages[0];
+    if (Array.isArray(messages) && typeof messages[0] === "string")
+      return messages[0];
   }
   return undefined;
 };
@@ -37,8 +39,15 @@ export const apiClient = {
     });
 
     if (response.status === 204) return undefined as T;
-    const body = await response.json() as T & ApiErrorBody;
-    if (!response.ok) throw new ApiError(response.status, getValidationMessage(body.error?.details) ?? body.error?.message ?? "İşlem tamamlanamadı", body.error?.details);
+    const body = (await response.json()) as T & ApiErrorBody;
+    if (!response.ok)
+      throw new ApiError(
+        response.status,
+        getValidationMessage(body.error?.details) ??
+          body.error?.message ??
+          "İşlem tamamlanamadı",
+        body.error?.details,
+      );
     return body;
   },
 
@@ -47,14 +56,23 @@ export const apiClient = {
   },
 
   post<T>(path: string, data?: unknown) {
-    return this.request<T>(path, { method: "POST", body: data === undefined ? undefined : JSON.stringify(data) });
+    return this.request<T>(path, {
+      method: "POST",
+      body: data === undefined ? undefined : JSON.stringify(data),
+    });
   },
 
   patch<T>(path: string, data: unknown) {
-    return this.request<T>(path, { method: "PATCH", body: JSON.stringify(data) });
+    return this.request<T>(path, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
   },
 
-  delete(path: string) {
-    return this.request<void>(path, { method: "DELETE" });
+  delete(path: string, data?: unknown) {
+    return this.request<void>(path, {
+      method: "DELETE",
+      body: data === undefined ? undefined : JSON.stringify(data),
+    });
   },
 };

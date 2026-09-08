@@ -8,6 +8,7 @@ export type User = {
   passwordHash: string;
   role: UserRole;
   isActive: boolean;
+  workshopName?: string;
 };
 
 export type CustomerInput = {

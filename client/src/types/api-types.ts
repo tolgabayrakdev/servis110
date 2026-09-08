@@ -4,6 +4,7 @@ export type User = {
   name: string;
   email: string;
   role: "owner" | "staff";
+  workshopName?: string;
 };
 
 export type Customer = {

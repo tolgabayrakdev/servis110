@@ -35,21 +35,24 @@ Tüm özel kayıtlar JWT içindeki `workshopId` ile filtrelenir. Bir servis baş
 
 ## Endpoint özeti
 
-| Metot | Yol | Açıklama |
-| --- | --- | --- |
-| POST | `/api/v1/auth/register` | Servis ve işletme sahibi oluşturur |
-| POST | `/api/v1/auth/login` | JWT üretir |
-| POST | `/api/v1/auth/logout` | Oturum cookie'sini temizler |
-| GET | `/api/v1/auth/me` | Aktif kullanıcıyı döndürür |
-| GET/POST | `/api/v1/customers` | Müşteri listeleme/oluşturma |
-| GET/PATCH/DELETE | `/api/v1/customers/:id` | Müşteri yönetimi |
-| GET/POST | `/api/v1/vehicles` | Araç listeleme/oluşturma |
-| GET | `/api/v1/vehicles/search?plate=34ABC110` | Plaka ile hızlı arama |
-| GET/PATCH/DELETE | `/api/v1/vehicles/:id` | Araç yönetimi |
-| GET/POST | `/api/v1/vehicles/:vehicleId/service-records` | Araç servis geçmişi |
-| GET/PATCH/DELETE | `/api/v1/service-records/:id` | Servis kaydı yönetimi |
-| GET | `/api/v1/dashboard` | Sayaçlar, son servisler ve bakım uyarıları |
-| GET | `/api/v1/public/service-cards/:token` | Public dijital servis karnesi |
+| Metot            | Yol                                           | Açıklama                                           |
+| ---------------- | --------------------------------------------- | -------------------------------------------------- |
+| POST             | `/api/v1/auth/register`                       | Servis ve işletme sahibi oluşturur                 |
+| POST             | `/api/v1/auth/login`                          | JWT üretir                                         |
+| POST             | `/api/v1/auth/logout`                         | Oturum cookie'sini temizler                        |
+| GET              | `/api/v1/auth/me`                             | Aktif kullanıcıyı döndürür                         |
+| PATCH            | `/api/v1/auth/account`                        | Ad, e-posta ve servis adını günceller              |
+| PATCH            | `/api/v1/auth/password`                       | Mevcut parola doğrulamasıyla parolayı değiştirir   |
+| DELETE           | `/api/v1/auth/account`                        | Parola ve onay metniyle hesabı kalıcı olarak siler |
+| GET/POST         | `/api/v1/customers`                           | Müşteri listeleme/oluşturma                        |
+| GET/PATCH/DELETE | `/api/v1/customers/:id`                       | Müşteri yönetimi                                   |
+| GET/POST         | `/api/v1/vehicles`                            | Araç listeleme/oluşturma                           |
+| GET              | `/api/v1/vehicles/search?plate=34ABC110`      | Plaka ile hızlı arama                              |
+| GET/PATCH/DELETE | `/api/v1/vehicles/:id`                        | Araç yönetimi                                      |
+| GET/POST         | `/api/v1/vehicles/:vehicleId/service-records` | Araç servis geçmişi                                |
+| GET/PATCH/DELETE | `/api/v1/service-records/:id`                 | Servis kaydı yönetimi                              |
+| GET              | `/api/v1/dashboard`                           | Sayaçlar, son servisler ve bakım uyarıları         |
+| GET              | `/api/v1/public/service-cards/:token`         | Public dijital servis karnesi                      |
 
 Register ve login sonucunda JWT, JavaScript'in erişemediği `HttpOnly` cookie'ye yazılır. Korumalı endpoint isteklerinde tarayıcı tarafında cookie gönderimi açılmalıdır:
 
