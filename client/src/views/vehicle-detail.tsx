@@ -5,6 +5,7 @@ import {
   CalendarClock,
   Check,
   Copy,
+  MessageCircle,
   Plus,
   QrCode,
 } from "lucide-react";
@@ -69,6 +70,12 @@ const serviceTypes = [
   "Muayene hazırlığı",
 ];
 const otherServiceType = "Diğer";
+
+const whatsappNumber = (phone: string) => {
+  const digits = phone.replace(/\D/g, "");
+  if (digits.startsWith("0")) return `90${digits.slice(1)}`;
+  return digits;
+};
 
 export default function VehicleDetail() {
   const { id = "" } = useParams();
@@ -313,6 +320,9 @@ export default function VehicleDetail() {
                         (reminder.dueMileage != null &&
                           reminder.dueMileage <= vehicle.currentMileage),
                     );
+                  const whatsappMessage = encodeURIComponent(
+                    `Merhaba ${vehicle.customerName}, ${vehicle.plate} plakalı aracınız için “${reminder.title}” hatırlatması oluşturulmuştur.${reminder.dueDate ? ` Planlanan tarih: ${formatDate(reminder.dueDate)}.` : ""}${reminder.dueMileage != null ? ` Hedef kilometre: ${formatMileage(reminder.dueMileage)}.` : ""} Uygun olduğunuzda servisimizle iletişime geçebilirsiniz.`,
+                  );
                   return (
                     <div key={reminder.id} className="flex flex-col gap-4 py-5 sm:flex-row sm:items-center">
                       <span
@@ -348,7 +358,22 @@ export default function VehicleDetail() {
                         )}
                       </div>
                       {reminder.status === "active" && (
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
+                          {vehicle.customerPhone && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              render={
+                                <a
+                                  href={`https://wa.me/${whatsappNumber(vehicle.customerPhone)}?text=${whatsappMessage}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                />
+                              }
+                            >
+                              <MessageCircle /> WhatsApp
+                            </Button>
+                          )}
                           <Button
                             size="sm"
                             variant="outline"

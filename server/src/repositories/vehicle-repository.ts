@@ -60,9 +60,4 @@ export const vehicleRepository = {
   async remove(id: string, workshopId: string) {
     return db("vehicles").where({ id, workshop_id: workshopId }).delete();
   },
-
-  async serviceCount(id: string, workshopId: string) {
-    const row = await db("service_records").where({ vehicle_id: id, workshop_id: workshopId }).count<{ count: string }>("id as count").first();
-    return Number(row?.count ?? 0);
-  },
 };

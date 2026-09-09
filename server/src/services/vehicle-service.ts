@@ -47,9 +47,6 @@ export const vehicleService = {
 
   async remove(id: string, workshopId: string) {
     await this.get(id, workshopId);
-    if (await vehicleRepository.serviceCount(id, workshopId)) {
-      throw errors.conflict("Servis geçmişi bulunan araç silinemez");
-    }
     await vehicleRepository.remove(id, workshopId);
   },
 };
