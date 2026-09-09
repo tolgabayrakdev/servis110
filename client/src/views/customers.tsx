@@ -13,6 +13,7 @@ import { EmptyState, ErrorState, LoadingState } from "@/components/data-state";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { FormField } from "@/components/form-field";
 import { PageHeader } from "@/components/page-header";
+import { Pagination } from "@/components/pagination";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -46,6 +47,8 @@ const emptyForm: CustomerForm = {
 export default function Customers() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [meta, setMeta] = useState({ page: 1, total: 0, totalPages: 1 });
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Customer | null>(null);
   const [deleting, setDeleting] = useState<Customer | null>(null);
@@ -59,9 +62,10 @@ export default function Customers() {
     setError("");
     try {
       const response = await apiClient.get<Paginated<Customer>>(
-        `/customers?limit=100${search ? `&search=${encodeURIComponent(search)}` : ""}`,
+        `/customers?page=${page}&limit=20${search ? `&search=${encodeURIComponent(search)}` : ""}`,
       );
       setCustomers(response.data);
+      setMeta(response.meta);
     } catch (caught) {
       setError(
         caught instanceof Error ? caught.message : "Müşteriler yüklenemedi",
@@ -69,7 +73,7 @@ export default function Customers() {
     } finally {
       setLoading(false);
     }
-  }, [search]);
+  }, [page, search]);
   useEffect(() => {
     const timer = window.setTimeout(load, 250);
     return () => window.clearTimeout(timer);
@@ -124,7 +128,8 @@ export default function Customers() {
     try {
       await apiClient.delete(`/customers/${deleting.id}`);
       setDeleting(null);
-      await load();
+      if (customers.length === 1 && page > 1) setPage((value) => value - 1);
+      else await load();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Müşteri silinemedi");
     }
@@ -149,7 +154,10 @@ export default function Customers() {
             <Input
               aria-label="Müşteri ara"
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                setPage(1);
+              }}
               placeholder="İsim, telefon veya e-posta ara"
             />
           </div>
@@ -158,14 +166,17 @@ export default function Customers() {
               aria-label="Aramayı temizle"
               size="icon"
               variant="ghost"
-              onClick={() => setSearch("")}
+              onClick={() => {
+                setSearch("");
+                setPage(1);
+              }}
             >
               <X />
             </Button>
           )}
         </div>
         <span className="count-label">
-          {customers.length} kayıt gösteriliyor
+          {meta.total} kayıt
         </span>
       </div>
       {loading ? (
@@ -292,6 +303,12 @@ export default function Customers() {
               </tbody>
             </table>
           </div>
+          <Pagination
+            page={meta.page}
+            totalPages={meta.totalPages}
+            total={meta.total}
+            onPageChange={setPage}
+          />
         </div>
       )}
 

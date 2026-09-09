@@ -5,6 +5,7 @@ import { EmptyState, ErrorState, LoadingState } from "@/components/data-state";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { FormField } from "@/components/form-field";
 import { PageHeader } from "@/components/page-header";
+import { Pagination } from "@/components/pagination";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -39,10 +40,20 @@ const emptyForm: VehicleForm = {
 export default function Vehicles() {
   const [params, setParams] = useSearchParams();
   const search = params.get("search") ?? "";
+  const page = Math.max(Number(params.get("page")) || 1, 1);
   const setSearch = (value: string) =>
     setParams(value ? { search: value } : {}, { replace: true });
+  const setPage = (nextPage: number) =>
+    setParams(
+      {
+        ...(search ? { search } : {}),
+        ...(nextPage > 1 ? { page: String(nextPage) } : {}),
+      },
+      { replace: true },
+    );
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [meta, setMeta] = useState({ page: 1, total: 0, totalPages: 1 });
   const [form, setForm] = useState<VehicleForm>(emptyForm);
   const [editing, setEditing] = useState<Vehicle | null>(null);
   const [deleting, setDeleting] = useState<Vehicle | null>(null);
@@ -57,11 +68,12 @@ export default function Vehicles() {
     try {
       const [vehicleResponse, customerResponse] = await Promise.all([
         apiClient.get<Paginated<Vehicle>>(
-          `/vehicles?limit=100${search ? `&search=${encodeURIComponent(search)}` : ""}`,
+          `/vehicles?page=${page}&limit=20${search ? `&search=${encodeURIComponent(search)}` : ""}`,
         ),
-        apiClient.get<Paginated<Customer>>("/customers?limit=100"),
+        apiClient.get<Paginated<Customer>>("/customers?limit=1000"),
       ]);
       setVehicles(vehicleResponse.data);
+      setMeta(vehicleResponse.meta);
       setCustomers(customerResponse.data);
     } catch (caught) {
       setError(
@@ -70,7 +82,7 @@ export default function Vehicles() {
     } finally {
       setLoading(false);
     }
-  }, [search]);
+  }, [page, search]);
   useEffect(() => {
     const timer = window.setTimeout(load, 250);
     return () => window.clearTimeout(timer);
@@ -123,7 +135,8 @@ export default function Vehicles() {
     try {
       await apiClient.delete(`/vehicles/${deleting.id}`);
       setDeleting(null);
-      await load();
+      if (vehicles.length === 1 && page > 1) setPage(page - 1);
+      else await load();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Araç silinemedi");
     }
@@ -164,7 +177,7 @@ export default function Vehicles() {
           )}
         </div>
         <span className="count-label">
-          {vehicles.length} kayıt gösteriliyor
+          {meta.total} kayıt
         </span>
       </div>
       {loading ? (
@@ -275,6 +288,12 @@ export default function Vehicles() {
               </tbody>
             </table>
           </div>
+          <Pagination
+            page={meta.page}
+            totalPages={meta.totalPages}
+            total={meta.total}
+            onPageChange={setPage}
+          />
         </div>
       )}
 
