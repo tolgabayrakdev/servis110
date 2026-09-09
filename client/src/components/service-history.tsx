@@ -1,4 +1,4 @@
-import { CalendarDays, Gauge, Trash2 } from "lucide-react";
+import { CalendarDays, ChevronDown, Gauge, Trash2 } from "lucide-react";
 import type { ServiceRecord } from "@/types/api-types";
 import { formatDate, formatMileage } from "@/lib/formatters";
 import { EmptyState } from "./data-state";
@@ -7,9 +7,11 @@ import { Button } from "./ui/button";
 export function ServiceHistory({
   records,
   onRemove,
+  collapsible = false,
 }: {
   records: ServiceRecord[];
   onRemove?: (record: ServiceRecord) => void;
+  collapsible?: boolean;
 }) {
   if (!records.length)
     return (
@@ -20,8 +22,8 @@ export function ServiceHistory({
     );
   return (
     <div>
-      {records.map((record, index) => (
-        <article key={record.id} className="record-sheet first:pt-0">
+      {records.map((record, index) => {
+        const header = (
           <div className="flex items-start gap-4">
             <span className="hidden w-7 shrink-0 pt-1 font-mono text-xs text-muted-foreground sm:block">
               {String(index + 1).padStart(2, "0")}
@@ -43,7 +45,7 @@ export function ServiceHistory({
                     </span>
                   </div>
                 </div>
-                {onRemove && (
+                {onRemove && !collapsible && (
                   <Button
                     variant="ghost"
                     size="icon-sm"
@@ -55,60 +57,79 @@ export function ServiceHistory({
                   </Button>
                 )}
               </div>
-              {(record.operations.length > 0 ||
-                record.replacedParts.length > 0) && (
-                <div className="mt-5 grid gap-5 sm:grid-cols-2">
-                  {[
-                    { label: "Yapılan işlemler", items: record.operations },
-                    {
-                      label: "Değiştirilen parçalar",
-                      items: record.replacedParts,
-                    },
-                  ]
-                    .filter((group) => group.items.length)
-                    .map((group) => (
-                      <div key={group.label}>
-                        <h4 className="eyebrow mb-2">{group.label}</h4>
-                        <ul className="space-y-1.5">
-                          {group.items.map((item, i) => (
-                            <li
-                              key={i}
-                              className="flex gap-2 text-sm leading-6 text-secondary-foreground"
-                            >
-                              <span className="text-muted-foreground">—</span>
-                              {item}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))}
-                </div>
-              )}
-              {record.description && (
-                <p className="mt-5 border-l-2 border-border pl-4 text-sm leading-6 text-muted-foreground">
-                  {record.description}
-                </p>
-              )}
-              {(record.nextServiceDate ||
-                record.nextServiceMileage != null) && (
-                <div className="mt-5 flex flex-wrap items-center gap-3 rounded-md bg-muted/70 px-4 py-3 text-xs">
-                  <span className="font-medium">Planlanan bakım</span>
-                  {record.nextServiceDate && (
-                    <span className="text-muted-foreground">
-                      {formatDate(record.nextServiceDate)}
-                    </span>
-                  )}
-                  {record.nextServiceMileage != null && (
-                    <span className="text-muted-foreground">
-                      {formatMileage(record.nextServiceMileage)}
-                    </span>
-                  )}
-                </div>
-              )}
             </div>
           </div>
-        </article>
-      ))}
+        );
+
+        const details = (
+          <div className={collapsible ? "ml-0 pt-5 sm:ml-11" : "ml-0 sm:ml-11"}>
+            {(record.operations.length > 0 || record.replacedParts.length > 0) && (
+              <div className="grid gap-5 sm:grid-cols-2">
+                {[
+                  { label: "Yapılan işlemler", items: record.operations },
+                  { label: "Değiştirilen parçalar", items: record.replacedParts },
+                ]
+                  .filter((group) => group.items.length)
+                  .map((group) => (
+                    <div key={group.label}>
+                      <h4 className="eyebrow mb-2">{group.label}</h4>
+                      <ul className="space-y-1.5">
+                        {group.items.map((item, itemIndex) => (
+                          <li key={itemIndex} className="flex gap-2 text-sm leading-6 text-secondary-foreground">
+                            <span className="text-muted-foreground">—</span>
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+              </div>
+            )}
+            {record.description && (
+              <p className="mt-5 border-l-2 border-border pl-4 text-sm leading-6 text-muted-foreground">
+                {record.description}
+              </p>
+            )}
+            {collapsible && onRemove && (
+              <div className="mt-5 flex justify-end border-t border-border pt-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground hover:text-destructive"
+                  onClick={() => onRemove(record)}
+                >
+                  <Trash2 />
+                  Servis kaydını sil
+                </Button>
+              </div>
+            )}
+          </div>
+        );
+
+        if (collapsible) {
+          return (
+            <details key={record.id} className="group record-sheet first:pt-0">
+              <summary className="flex cursor-pointer list-none items-center gap-3 rounded-md outline-none transition-colors hover:text-primary focus-visible:ring-2 focus-visible:ring-ring/40 [&::-webkit-details-marker]:hidden">
+                <div className="min-w-0 flex-1">{header}</div>
+                <div className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
+                  <span className="hidden sm:inline">
+                    Detayı aç
+                  </span>
+                  <ChevronDown className="size-4 transition-transform group-open:rotate-180" />
+                </div>
+              </summary>
+              {details}
+            </details>
+          );
+        }
+
+        return (
+          <article key={record.id} className="record-sheet first:pt-0">
+            {header}
+            {details}
+          </article>
+        );
+      })}
     </div>
   );
 }

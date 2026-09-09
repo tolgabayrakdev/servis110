@@ -3,8 +3,7 @@ import type { ServiceRecordInput } from "../types/entities.js";
 
 const columns = [
   "id", "vehicle_id as vehicleId", "service_date as serviceDate", "mileage", "service_type as serviceType",
-  "operations", "replaced_parts as replacedParts", "description", "next_service_date as nextServiceDate",
-  "next_service_mileage as nextServiceMileage", "created_at as createdAt", "updated_at as updatedAt",
+  "operations", "replaced_parts as replacedParts", "description", "created_at as createdAt", "updated_at as updatedAt",
 ];
 
 const toRow = (input: Partial<ServiceRecordInput>) => ({
@@ -14,8 +13,6 @@ const toRow = (input: Partial<ServiceRecordInput>) => ({
   ...(input.operations !== undefined && { operations: JSON.stringify(input.operations) }),
   ...(input.replacedParts !== undefined && { replaced_parts: JSON.stringify(input.replacedParts) }),
   ...(input.description !== undefined && { description: input.description || null }),
-  ...(input.nextServiceDate !== undefined && { next_service_date: input.nextServiceDate || null }),
-  ...(input.nextServiceMileage !== undefined && { next_service_mileage: input.nextServiceMileage || null }),
   updated_at: db.fn.now(),
 });
 

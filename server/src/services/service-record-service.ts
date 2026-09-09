@@ -21,13 +21,7 @@ export const serviceRecordService = {
   },
 
   async update(id: string, workshopId: string, input: Partial<ServiceRecordInput>) {
-    const current = await this.get(id, workshopId);
-    const mileage = input.mileage ?? current.mileage;
-    const nextMileage = input.nextServiceMileage === undefined ? current.nextServiceMileage : input.nextServiceMileage;
-    if (nextMileage && nextMileage <= mileage) throw errors.badRequest("Sonraki bakım kilometresi servis kilometresinden büyük olmalıdır");
-    const serviceDate = input.serviceDate ?? current.serviceDate;
-    const nextDate = input.nextServiceDate === undefined ? current.nextServiceDate : input.nextServiceDate;
-    if (nextDate && nextDate <= serviceDate) throw errors.badRequest("Sonraki bakım tarihi servis tarihinden sonra olmalıdır");
+    await this.get(id, workshopId);
     const record = await serviceRecordRepository.update(id, workshopId, input);
     if (!record) throw errors.notFound("Servis kaydı");
     return record;

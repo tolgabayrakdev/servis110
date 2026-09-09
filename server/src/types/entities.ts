@@ -36,6 +36,4 @@ export type ServiceRecordInput = {
   operations: string[];
   replacedParts: string[];
   description?: string | null;
-  nextServiceDate?: string | null;
-  nextServiceMileage?: number | null;
 };

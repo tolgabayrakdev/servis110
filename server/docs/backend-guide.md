@@ -55,6 +55,8 @@ Tüm özel kayıtlar JWT içindeki `workshopId` ile filtrelenir. Bir servis baş
 | GET/PATCH/DELETE | `/api/v1/vehicles/:id`                        | Araç yönetimi                                      |
 | GET/POST         | `/api/v1/vehicles/:vehicleId/service-records` | Araç servis geçmişi                                |
 | GET/PATCH/DELETE | `/api/v1/service-records/:id`                 | Servis kaydı yönetimi                              |
+| GET/POST         | `/api/v1/vehicles/:vehicleId/reminders`       | Araca ait bağımsız hatırlatıcılar                  |
+| PATCH/DELETE     | `/api/v1/reminders/:id`                       | Hatırlatıcı durumu ve silme işlemi                 |
 | GET              | `/api/v1/dashboard`                           | Sayaçlar, son servisler ve bakım uyarıları         |
 | GET              | `/api/v1/public/service-cards/:token`         | Public dijital servis karnesi                      |
 
@@ -69,6 +71,10 @@ fetch("http://localhost:3000/api/v1/auth/me", {
 Axios kullanılıyorsa `withCredentials: true` verilmelidir. Middleware, CLI ve harici API istemcileri için `Authorization: Bearer <token>` başlığını geriye dönük olarak da destekler.
 
 Araç cevaplarındaki `serviceCardUrl` değeri frontend'de `react-qr-code` bileşenine doğrudan verilebilir. Backend QR görseli üretmez.
+
+Servis kayıtları yalnızca tamamlanmış işlemleri temsil eder. Gelecek tarih veya
+kilometre planları `maintenance_reminders` tablosunda bağımsız tutulur;
+tamamlanabilir veya iptal edilebilir.
 
 ## E-posta doğrulama
 

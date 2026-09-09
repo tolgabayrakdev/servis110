@@ -1,6 +1,8 @@
 import {
+  AlertTriangle,
   ArrowLeft,
   ArrowUpRight,
+  CalendarClock,
   Check,
   Copy,
   Plus,
@@ -23,10 +25,21 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { apiClient } from "@/lib/api-client";
 import { formatDate, formatMileage } from "@/lib/formatters";
-import type { ServiceRecord, Vehicle } from "@/types/api-types";
+import type {
+  MaintenanceReminder,
+  ServiceRecord,
+  Vehicle,
+} from "@/types/api-types";
 
 type ServiceForm = {
   serviceDate: string;
@@ -35,8 +48,12 @@ type ServiceForm = {
   operations: string;
   replacedParts: string;
   description: string;
-  nextServiceDate: string;
-  nextServiceMileage: string;
+};
+type ReminderForm = {
+  title: string;
+  dueDate: string;
+  dueMileage: string;
+  notes: string;
 };
 const today = new Date().toISOString().slice(0, 10);
 const serviceTypes = [
@@ -51,19 +68,23 @@ const serviceTypes = [
   "Kaporta / boya",
   "Muayene hazırlığı",
 ];
+const otherServiceType = "Diğer";
 
 export default function VehicleDetail() {
   const { id = "" } = useParams();
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [records, setRecords] = useState<ServiceRecord[]>([]);
+  const [reminders, setReminders] = useState<MaintenanceReminder[]>([]);
   const [deleting, setDeleting] = useState<ServiceRecord | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [reminderDialogOpen, setReminderDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">(
     "idle",
   );
+  const [serviceTypeChoice, setServiceTypeChoice] = useState("");
   const copyLink = async () => {
     try {
       await navigator.clipboard.writeText(vehicle!.serviceCardUrl);
@@ -79,20 +100,28 @@ export default function VehicleDetail() {
     operations: "",
     replacedParts: "",
     description: "",
-    nextServiceDate: "",
-    nextServiceMileage: "",
+  });
+  const [reminderForm, setReminderForm] = useState<ReminderForm>({
+    title: "",
+    dueDate: "",
+    dueMileage: "",
+    notes: "",
   });
 
   const load = useCallback(async () => {
     try {
-      const [vehicleResponse, recordsResponse] = await Promise.all([
+      const [vehicleResponse, recordsResponse, remindersResponse] = await Promise.all([
         apiClient.get<{ data: Vehicle }>(`/vehicles/${id}`),
         apiClient.get<{ data: ServiceRecord[] }>(
           `/vehicles/${id}/service-records`,
         ),
+        apiClient.get<{ data: MaintenanceReminder[] }>(
+          `/vehicles/${id}/reminders`,
+        ),
       ]);
       setVehicle(vehicleResponse.data);
       setRecords(recordsResponse.data);
+      setReminders(remindersResponse.data);
       setError("");
     } catch (caught) {
       setError(
@@ -109,6 +138,7 @@ export default function VehicleDetail() {
 
   const openService = () => {
     setError("");
+    setServiceTypeChoice("");
     setForm({
       serviceDate: today,
       mileage: vehicle?.currentMileage.toString() ?? "",
@@ -116,8 +146,6 @@ export default function VehicleDetail() {
       operations: "",
       replacedParts: "",
       description: "",
-      nextServiceDate: "",
-      nextServiceMileage: "",
     });
     setDialogOpen(true);
   };
@@ -130,6 +158,11 @@ export default function VehicleDetail() {
         .split(/\n|,/)
         .map((item) => item.trim())
         .filter(Boolean);
+    if (!form.serviceType.trim()) {
+      setError("Lütfen bir işlem türü seçin veya diğer işlem türünü yazın");
+      setSaving(false);
+      return;
+    }
     try {
       await apiClient.post(`/vehicles/${id}/service-records`, {
         serviceDate: form.serviceDate,
@@ -138,10 +171,6 @@ export default function VehicleDetail() {
         operations: lines(form.operations),
         replacedParts: lines(form.replacedParts),
         description: form.description || null,
-        nextServiceDate: form.nextServiceDate || null,
-        nextServiceMileage: form.nextServiceMileage
-          ? Number(form.nextServiceMileage)
-          : null,
       });
       setDialogOpen(false);
       await load();
@@ -165,10 +194,52 @@ export default function VehicleDetail() {
       setError(caught instanceof Error ? caught.message : "Kayıt silinemedi");
     }
   };
+  const openReminder = () => {
+    setError("");
+    setReminderForm({ title: "", dueDate: "", dueMileage: "", notes: "" });
+    setReminderDialogOpen(true);
+  };
+  const saveReminder = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!reminderForm.dueDate && !reminderForm.dueMileage) {
+      setError("Hatırlatıcı için tarih veya kilometre girin");
+      return;
+    }
+    setSaving(true);
+    setError("");
+    try {
+      await apiClient.post(`/vehicles/${id}/reminders`, {
+        title: reminderForm.title,
+        dueDate: reminderForm.dueDate || null,
+        dueMileage: reminderForm.dueMileage
+          ? Number(reminderForm.dueMileage)
+          : null,
+        notes: reminderForm.notes || null,
+      });
+      setReminderDialogOpen(false);
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Hatırlatıcı oluşturulamadı");
+    } finally {
+      setSaving(false);
+    }
+  };
+  const setReminderStatus = async (
+    reminderId: string,
+    status: "completed" | "cancelled",
+  ) => {
+    try {
+      await apiClient.patch(`/reminders/${reminderId}`, { status });
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Hatırlatıcı güncellenemedi");
+    }
+  };
 
   if (loading) return <LoadingState />;
   if (error && !vehicle) return <ErrorState message={error} retry={load} />;
   if (!vehicle) return null;
+
 
   return (
     <>
@@ -179,7 +250,7 @@ export default function VehicleDetail() {
         <ArrowLeft className="size-3.5" />
         Araç kayıtlarına dön
       </Link>
-      {error && !dialogOpen && (
+      {error && !dialogOpen && !reminderDialogOpen && (
         <p
           role="alert"
           className="mb-5 rounded-md bg-destructive/10 p-4 text-sm text-destructive"
@@ -214,7 +285,93 @@ export default function VehicleDetail() {
         ))}
       </div>
       <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_290px]">
-        <section className="panel">
+        <div className="space-y-8">
+          <section className="panel">
+            <div className="panel-heading">
+              <div>
+                <h2 className="panel-title">Bakım hatırlatmaları</h2>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Servis geçmişinden bağımsız planlar
+                </p>
+              </div>
+              <Button size="sm" onClick={openReminder}>
+                <Plus />
+                Hatırlatıcı ekle
+              </Button>
+            </div>
+            <div className="divide-y divide-border px-5 sm:px-7">
+              {reminders.length === 0 ? (
+                <p className="py-7 text-sm text-muted-foreground">
+                  Bu araç için bir hatırlatıcı oluşturulmamış.
+                </p>
+              ) : (
+                reminders.map((reminder) => {
+                  const overdue =
+                    reminder.status === "active" &&
+                    Boolean(
+                      (reminder.dueDate && reminder.dueDate < today) ||
+                        (reminder.dueMileage != null &&
+                          reminder.dueMileage <= vehicle.currentMileage),
+                    );
+                  return (
+                    <div key={reminder.id} className="flex flex-col gap-4 py-5 sm:flex-row sm:items-center">
+                      <span
+                        className={`grid size-9 shrink-0 place-items-center rounded-md ${
+                          overdue
+                            ? "bg-destructive/10 text-destructive"
+                            : reminder.status === "active"
+                              ? "bg-primary/10 text-primary"
+                              : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        {overdue ? <AlertTriangle className="size-4" /> : <CalendarClock className="size-4" />}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium">{reminder.title}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {[
+                            reminder.dueDate ? formatDate(reminder.dueDate) : null,
+                            reminder.dueMileage != null ? formatMileage(reminder.dueMileage) : null,
+                            reminder.status === "completed"
+                              ? "Tamamlandı"
+                              : reminder.status === "cancelled"
+                                ? "İptal edildi"
+                                : overdue
+                                  ? "Tarihi geçti"
+                                  : "Aktif",
+                          ]
+                            .filter(Boolean)
+                            .join(" · ")}
+                        </p>
+                        {reminder.notes && (
+                          <p className="mt-2 text-xs leading-5 text-muted-foreground">{reminder.notes}</p>
+                        )}
+                      </div>
+                      {reminder.status === "active" && (
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => void setReminderStatus(reminder.id, "completed")}
+                          >
+                            <Check /> Tamamla
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => void setReminderStatus(reminder.id, "cancelled")}
+                          >
+                            İptal
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </section>
+          <section className="panel">
           <div className="panel-heading">
             <h2 className="panel-title">İşlem geçmişi</h2>
             <span className="text-[11px] text-muted-foreground">
@@ -222,9 +379,14 @@ export default function VehicleDetail() {
             </span>
           </div>
           <div className="p-5 sm:p-7">
-            <ServiceHistory records={records} onRemove={setDeleting} />
+            <ServiceHistory
+              records={records}
+              onRemove={setDeleting}
+              collapsible
+            />
           </div>
-        </section>
+          </section>
+        </div>
         <aside className="space-y-7">
           <div className="rounded-md border border-border bg-accent/40 p-6">
             <QrCode className="mb-5 size-5 text-muted-foreground" />
@@ -321,22 +483,46 @@ export default function VehicleDetail() {
                 />
               </FormField>
               <FormField label="İşlem türü" required>
-                <Input
-                  list="service-type-options"
-                  value={form.serviceType}
-                  placeholder="Seçin veya yazın"
-                  onChange={(e) =>
-                    setForm({ ...form, serviceType: e.target.value })
-                  }
-                  required
-                />
-                <datalist id="service-type-options">
+                <Select
+                  value={serviceTypeChoice}
+                  onValueChange={(value) => {
+                    const selected = value ?? "";
+                    setServiceTypeChoice(selected);
+                    setForm({
+                      ...form,
+                      serviceType:
+                        selected === otherServiceType ? "" : selected,
+                    });
+                  }}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="İşlem türünü seçin" />
+                  </SelectTrigger>
+                  <SelectContent>
                   {serviceTypes.map((type) => (
-                    <option key={type} value={type} />
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
                   ))}
-                </datalist>
+                    <SelectItem value={otherServiceType}>Diğer</SelectItem>
+                  </SelectContent>
+                </Select>
               </FormField>
             </div>
+            {serviceTypeChoice === otherServiceType && (
+              <FormField label="Diğer işlem türü" required>
+                <Input
+                  value={form.serviceType}
+                  maxLength={100}
+                  placeholder="Örn. Egzoz sistemi onarımı"
+                  onChange={(event) =>
+                    setForm({ ...form, serviceType: event.target.value })
+                  }
+                  required
+                  autoFocus
+                />
+              </FormField>
+            )}
             <div className="grid gap-4 sm:grid-cols-2">
               <FormField label="Yapılan işlemler">
                 <Textarea
@@ -370,36 +556,6 @@ export default function VehicleDetail() {
                 placeholder="İşlemle ilgili ek notlar..."
               />
             </FormField>
-            <div className="form-section">
-              <p className="text-sm font-medium">
-                Sonraki bakım{" "}
-                <span className="text-xs font-normal text-muted-foreground">
-                  · İsteğe bağlı
-                </span>
-              </p>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormField label="Sonraki bakım tarihi">
-                  <Input
-                    type="date"
-                    min={form.serviceDate}
-                    value={form.nextServiceDate}
-                    onChange={(e) =>
-                      setForm({ ...form, nextServiceDate: e.target.value })
-                    }
-                  />
-                </FormField>
-                <FormField label="Sonraki bakım kilometresi">
-                  <Input
-                    type="number"
-                    min={Number(form.mileage) + 1 || 0}
-                    value={form.nextServiceMileage}
-                    onChange={(e) =>
-                      setForm({ ...form, nextServiceMileage: e.target.value })
-                    }
-                  />
-                </FormField>
-              </div>
-            </div>
             <DialogFooter>
               <Button
                 type="button"
@@ -410,6 +566,78 @@ export default function VehicleDetail() {
               </Button>
               <Button type="submit" disabled={saving}>
                 {saving ? "Kaydediliyor..." : "Servis kaydını oluştur"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={reminderDialogOpen} onOpenChange={setReminderDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Hatırlatıcı oluştur</DialogTitle>
+            <DialogDescription>
+              {vehicle.plate} için gelecekte hatırlatılacak bağımsız bir plan ekleyin.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={saveReminder} className="grid gap-5">
+            {error && (
+              <p role="alert" className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+                {error}
+              </p>
+            )}
+            <FormField label="Hatırlatma başlığı" required>
+              <Input
+                value={reminderForm.title}
+                maxLength={120}
+                placeholder="Örn. Yağ bakımını kontrol et"
+                onChange={(event) =>
+                  setReminderForm({ ...reminderForm, title: event.target.value })
+                }
+                required
+                autoFocus
+              />
+            </FormField>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormField label="Hatırlatma tarihi">
+                <Input
+                  type="date"
+                  min={today}
+                  value={reminderForm.dueDate}
+                  onChange={(event) =>
+                    setReminderForm({ ...reminderForm, dueDate: event.target.value })
+                  }
+                />
+              </FormField>
+              <FormField label="Hedef kilometre">
+                <Input
+                  type="number"
+                  min={vehicle.currentMileage + 1}
+                  value={reminderForm.dueMileage}
+                  placeholder={String(vehicle.currentMileage + 10_000)}
+                  onChange={(event) =>
+                    setReminderForm({ ...reminderForm, dueMileage: event.target.value })
+                  }
+                />
+              </FormField>
+            </div>
+            <p className="-mt-3 text-xs text-muted-foreground">
+              Tarih veya kilometreden en az birini girin.
+            </p>
+            <FormField label="Not">
+              <Textarea
+                value={reminderForm.notes}
+                placeholder="Hatırlatmayla ilgili ek bilgi..."
+                onChange={(event) =>
+                  setReminderForm({ ...reminderForm, notes: event.target.value })
+                }
+              />
+            </FormField>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setReminderDialogOpen(false)}>
+                Vazgeç
+              </Button>
+              <Button type="submit" disabled={saving}>
+                {saving ? "Kaydediliyor..." : "Hatırlatıcı oluştur"}
               </Button>
             </DialogFooter>
           </form>

@@ -36,6 +36,9 @@ function MaintenanceRow({ item }: { item: MaintenanceItem }) {
         )}
       </div>
       <div className="min-w-0 flex-1">
+        <p className="mb-1 truncate text-xs font-semibold text-foreground">
+          {item.title}
+        </p>
         <div className="flex items-center gap-2">
           <span className="font-mono text-sm font-bold text-foreground">
             {item.plate}
@@ -240,7 +243,7 @@ export default function Dashboard() {
         <div className="space-y-7">
           <section className="border-t border-foreground pt-5">
             <div className="mb-5 flex items-center justify-between">
-              <h2 className="panel-title">Bakım ajandası</h2>
+              <h2 className="panel-title">Yaklaşan hatırlatmalar</h2>
               <CalendarClock className="size-4 text-muted-foreground" />
             </div>
             {[...data.overdueMaintenance, ...data.upcomingMaintenance]
@@ -248,7 +251,7 @@ export default function Dashboard() {
               <div className="rounded-md bg-muted/60 p-6">
                 <p className="font-display text-2xl">Ajandanız güncel.</p>
                 <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                  Yaklaşan veya geciken bir bakım bulunmuyor.
+                  Yaklaşan veya tarihi geçen bir hatırlatma bulunmuyor.
                 </p>
               </div>
             ) : (
@@ -256,7 +259,7 @@ export default function Dashboard() {
                 {[...data.overdueMaintenance, ...data.upcomingMaintenance]
                   .slice(0, 6)
                   .map((item) => (
-                    <MaintenanceRow key={item.vehicleId} item={item} />
+                    <MaintenanceRow key={item.reminderId} item={item} />
                   ))}
               </div>
             )}

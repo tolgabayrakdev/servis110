@@ -41,12 +41,24 @@ export type ServiceRecord = {
   operations: string[];
   replacedParts: string[];
   description?: string | null;
-  nextServiceDate?: string | null;
-  nextServiceMileage?: number | null;
+  createdAt: string;
+};
+
+export type MaintenanceReminder = {
+  id: string;
+  vehicleId: string;
+  title: string;
+  dueDate?: string | null;
+  dueMileage?: number | null;
+  notes?: string | null;
+  status: "active" | "completed" | "cancelled";
+  completedAt?: string | null;
   createdAt: string;
 };
 
 export type MaintenanceItem = {
+  reminderId: string;
+  title: string;
   vehicleId: string;
   plate: string;
   brand: string;

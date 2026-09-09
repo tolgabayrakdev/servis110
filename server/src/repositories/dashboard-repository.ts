@@ -14,30 +14,25 @@ export const dashboardRepository = {
         .orderBy("sr.created_at", "desc")
         .limit(10),
       db.raw(`
-        WITH latest AS (
-          SELECT DISTINCT ON (sr.vehicle_id)
-            sr.vehicle_id, sr.next_service_date, sr.next_service_mileage
-          FROM service_records sr
-          WHERE sr.workshop_id = ?
-          ORDER BY sr.vehicle_id, sr.service_date DESC, sr.created_at DESC
-        )
-        SELECT v.id AS "vehicleId", v.plate, v.brand, v.model,
+        SELECT r.id AS "reminderId", r.title,
+          v.id AS "vehicleId", v.plate, v.brand, v.model,
           v.current_mileage AS "currentMileage", c.name AS "customerName",
-          latest.next_service_date AS "nextServiceDate",
-          latest.next_service_mileage AS "nextServiceMileage",
+          r.due_date AS "nextServiceDate",
+          r.due_mileage AS "nextServiceMileage",
           CASE
-            WHEN latest.next_service_date < CURRENT_DATE
-              OR latest.next_service_mileage <= v.current_mileage THEN 'overdue'
+            WHEN r.due_date < CURRENT_DATE
+              OR r.due_mileage <= v.current_mileage THEN 'overdue'
             ELSE 'upcoming'
           END AS status
-        FROM latest
-        JOIN vehicles v ON v.id = latest.vehicle_id
+        FROM maintenance_reminders r
+        JOIN vehicles v ON v.id = r.vehicle_id
         JOIN customers c ON c.id = v.customer_id
-        WHERE (latest.next_service_date < CURRENT_DATE
-          OR latest.next_service_mileage <= v.current_mileage)
-          OR (latest.next_service_date BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '30 days'
-          OR latest.next_service_mileage BETWEEN v.current_mileage + 1 AND v.current_mileage + 1000)
-        ORDER BY status, latest.next_service_date NULLS LAST
+        WHERE r.workshop_id = ? AND r.status = 'active' AND (
+          r.due_date < CURRENT_DATE OR r.due_mileage <= v.current_mileage
+          OR r.due_date BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '30 days'
+          OR r.due_mileage BETWEEN v.current_mileage + 1 AND v.current_mileage + 1000
+        )
+        ORDER BY status, r.due_date NULLS LAST, r.due_mileage NULLS LAST
       `, [workshopId]),
     ]);
 

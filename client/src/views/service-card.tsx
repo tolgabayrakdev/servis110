@@ -93,7 +93,7 @@ export default function ServiceCard() {
                 </span>
               </div>
               <div className="p-5 sm:p-8">
-                <ServiceHistory records={data.serviceHistory} />
+                <ServiceHistory records={data.serviceHistory} collapsible />
               </div>
             </section>
             <p className="mt-7 text-center text-xs leading-5 text-muted-foreground">

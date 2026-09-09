@@ -14,7 +14,7 @@ export const publicCardRepository = {
 
   async history(vehicleId: string) {
     return db("service_records")
-      .select("id", "service_date as serviceDate", "mileage", "service_type as serviceType", "operations", "replaced_parts as replacedParts", "description", "next_service_date as nextServiceDate", "next_service_mileage as nextServiceMileage")
+      .select("id", "service_date as serviceDate", "mileage", "service_type as serviceType", "operations", "replaced_parts as replacedParts", "description")
       .where("vehicle_id", vehicleId)
       .orderBy("service_date", "desc");
   },
